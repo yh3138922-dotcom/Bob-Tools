@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>静态投票工具</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --ok: #16a34a;
+      --warn: #d97706;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    header {
+      padding: 28px 16px 12px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: 0.02em;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    main {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .card h2 {
+      font-size: 18px;
+      margin: 0 0 14px;
+    }
+
+    .form-row {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    label {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      outline: none;
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    button,
+    .file-label {
+      border: 0;
+      border-radius: 10px;
+      padding: 9px 12px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      background: var(--primary);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      user-select: none;
+    }
+
+    button:hover,
+    .file-label:hover {
+      background: var(--primary-dark);
+    }
+
+    button.secondary {
+      background: #eef2ff;
+      color: #1e3a8a;
+    }
+
+    button.secondary:hover {
+      background: #dbeafe;
+    }
+
+    button.danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    button.danger:hover {
+      background: #fecaca;
+    }
+
+    button.ghost {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    button.ghost:hover {
+      background: #e5e7eb;
+    }
+
+    .option-item {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #fafafa;
+    }
+
+    .option-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .option-head strong {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .small-btn {
+      padding: 5px 8px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .notice {
+      color: var(--muted);
+      font-size: 13px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      padding: 10px 12px;
+      border-radius: 12px;
+      margin: 0 0 12px;
+    }
+
+    .voter-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+      background: #fff;
+    }
+
+    .voter-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .voter-title h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .vote-count {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .option-choice {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 8px;
+      align-items: start;
+      padding: 10px 8px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .option-choice:first-of-type {
+      border-top: 0;
+    }
+
+    .option-choice input {
+      margin-top: 5px;
+      transform: scale(1.15);
+    }
+
+    .option-name {
+      font-weight: 700;
+    }
+
+    .option-desc {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 3px;
+      white-space: pre-wrap;
+    }
+
+    .result-item {
+      margin-bottom: 14px;
+    }
+
+    .result-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .bar-bg {
+      height: 12px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.2s ease;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .empty {
+      padding: 30px 10px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      background: #fafafa;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 24px 0 8px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .warning {
+      color: #92400e;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="pageTitle">静态投票工具</h1>
+    <p>适用于 GitHub Pages 的纯前端投票页面，数据保存在当前浏览器本地。</p>
+  </header>
+
+  <main>
+    <div class="grid">
+      <section>
+        <div class="card">
+          <h2>1. 投票设置</h2>
+          <p class="warning">
+            说明：GitHub Pages 是静态网页，本工具不含云端数据库。不同设备打开网页时，投票数据不会自动同步。
+          </p>
+
+          <div class="form-row">
+            <label for="pollTitle">投票标题</label>
+            <input id="pollTitle" type="text" placeholder="例如：晚餐地点投票" />
+          </div>
+
+          <div class="two-cols">
+            <div class="form-row">
+              <label for="voterCount">投票人数</label>
+              <input id="voterCount" type="number" min="1" step="1" />
+            </div>
+            <div class="form-row">
+              <label for="votesPerPerson">每人票数</label>
+              <input id="votesPerPerson" type="number" min="1" step="1" />
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button id="applySettingsBtn">应用设置</button>
+            <button class="secondary" id="saveBtn">保存到浏览器</button>
+            <button class="ghost" id="clearVotesBtn">清空投票</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>2. 编辑选项</h2>
+          <p class="notice">每个选项包含名称和简介。删除选项会同步移除该选项已有票数。</p>
+          <div id="optionsEditor"></div>
+          <div class="btn-row">
+            <button id="addOptionBtn">新增选项</button>
+            <button class="secondary" id="applyOptionsBtn">应用选项</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>3. 导入 / 导出</h2>
+          <p class="notice">导出 JSON 可备份当前投票配置和结果；换电脑后可导入继续查看。</p>
+          <div class="btn-row">
+            <button class="secondary" id="exportBtn">导出 JSON</button>
+            <label class="file-label" for="importFile">导入 JSON</label>
+            <input id="importFile" type="file" accept="application/json,.json" />
+            <button class="danger" id="resetAllBtn">重置全部</button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="card">
+          <h2>投票区</h2>
+          <div id="votingArea"></div>
+        </div>
+
+        <div class="card">
+          <h2>结果统计</h2>
+          <div id="resultsArea"></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer-note">
+      静态投票工具 · 适合部署到 GitHub Pages / Cloudflare Pages / Vercel
+    </div>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "static-voting-tool-v1";
+
+    const defaultState = {
+      title: "静态投票工具",
+      voterCount: 3,
+      votesPerPerson: 1,
+      options: [
+        { id: cryptoRandomId(), name: "选项 A", desc: "这里填写选项 A 的简介。" },
+        { id: cryptoRandomId(), name: "选项 B", desc: "这里填写选项 B 的简介。" },
+        { id: cryptoRandomId(), name: "选项 C", desc: "这里填写选项 C 的简介。" }
+      ],
+      votes: {}
+    };
+
+    let state = loadState();
+
+    const els = {
+      pageTitle: document.getElementById("pageTitle"),
+      pollTitle: document.getElementById("pollTitle"),
+      voterCount: document.getElementById("voterCount"),
+      votesPerPerson: document.getElementById("votesPerPerson"),
+      optionsEditor: document.getElementById("optionsEditor"),
+      votingArea: document.getElementById("votingArea"),
+      resultsArea: document.getElementById("resultsArea"),
+      applySettingsBtn: document.getElementById("applySettingsBtn"),
+      saveBtn: document.getElementById("saveBtn"),
+      clearVotesBtn: document.getElementById("clearVotesBtn"),
+      addOptionBtn: document.getElementById("addOptionBtn"),
+      applyOptionsBtn: document.getElementById("applyOptionsBtn"),
+      exportBtn: document.getElementById("exportBtn"),
+      importFile: document.getElementById("importFile"),
+      resetAllBtn: document.getElementById("resetAllBtn")
+    };
+
+    function cryptoRandomId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return structuredCloneSafe(defaultState);
+        const parsed = JSON.parse(raw);
+        return normalizeState(parsed);
+      } catch (err) {
+        console.warn("读取本地数据失败，已使用默认数据。", err);
+        return structuredCloneSafe(defaultState);
+      }
+    }
+
+    function structuredCloneSafe(obj) {
+      return JSON.parse(JSON.stringify(obj));
+    }
+
+    function normalizeState(input) {
+      const safe = structuredCloneSafe(defaultState);
+      const merged = {
+        ...safe,
+        ...input
+      };
+
+      merged.title = String(merged.title || "静态投票工具");
+      merged.voterCount = Math.max(1, parseInt(merged.voterCount || 1, 10));
+      merged.votesPerPerson = Math.max(1, parseInt(merged.votesPerPerson || 1, 10));
+
+      if (!Array.isArray(merged.options)) merged.options = [];
+      merged.options = merged.options
+        .map(opt => ({
+          id: opt.id || cryptoRandomId(),
+          name: String(opt.name || "").trim() || "未命名选项",
+          desc: String(opt.desc || "")
+        }))
+        .filter(opt => opt.name);
+
+      if (merged.options.length === 0) {
+        merged.options = structuredCloneSafe(defaultState.options);
+      }
+
+      if (!merged.votes || typeof merged.votes !== "object") merged.votes = {};
+      for (let i = 1; i <= merged.voterCount; i++) {
+        const key = voterKey(i);
+        if (!Array.isArray(merged.votes[key])) merged.votes[key] = [];
+        merged.votes[key] = merged.votes[key].filter(id => merged.options.some(opt => opt.id === id));
+      }
+
+      Object.keys(merged.votes).forEach(key => {
+        const n = parseInt(key.replace("voter-", ""), 10);
+        if (!n || n < 1 || n > merged.voterCount) {
+          delete merged.votes[key];
+        }
+      });
+
+      return merged;
+    }
+
+    function saveState() {
+      state = normalizeState(state);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function voterKey(index) {
+      return `voter-${index}`;
+    }
+
+    function render() {
+      state = normalizeState(state);
+
+      els.pageTitle.textContent = state.title || "静态投票工具";
+      document.title = state.title || "静态投票工具";
+      els.pollTitle.value = state.title;
+      els.voterCount.value = state.voterCount;
+      els.votesPerPerson.value = state.votesPerPerson;
+
+      renderOptionsEditor();
+      renderVotingArea();
+      renderResults();
+    }
+
+    function renderOptionsEditor() {
+      els.optionsEditor.innerHTML = "";
+
+      state.options.forEach((opt, index) => {
+        const item = document.createElement("div");
+        item.className = "option-item";
+        item.dataset.optionId = opt.id;
+
+        item.innerHTML = `
+          <div class="option-head">
+            <strong>选项 ${index + 1}</strong>
+            <button class="danger small-btn" type="button" data-action="delete-option">删除</button>
+          </div>
+          <div class="form-row">
+            <label>名称</label>
+            <input type="text" data-field="name" value="${escapeHtmlAttr(opt.name)}" />
+          </div>
+          <div class="form-row">
+            <label>简介</label>
+            <textarea data-field="desc">${escapeHtmlText(opt.desc)}</textarea>
+          </div>
+        `;
+
+        els.optionsEditor.appendChild(item);
+      });
+
+      els.optionsEditor.querySelectorAll("[data-action='delete-option']").forEach(btn => {
+        btn.addEventListener("click", event => {
+          const wrapper = event.target.closest(".option-item");
+          const id = wrapper.dataset.optionId;
+          if (state.options.length <= 1) {
+            alert("至少需要保留 1 个选项。");
+            return;
+          }
+          state.options = state.options.filter(opt => opt.id !== id);
+          Object.keys(state.votes).forEach(key => {
+            state.votes[key] = state.votes[key].filter(votedId => votedId !== id);
+          });
+          saveState();
+          render();
+        });
+      });
+    }
+
+    function renderVotingArea() {
+      if (!state.options.length) {
+        els.votingArea.innerHTML = `<div class="empty">请先添加投票选项。</div>`;
+        return;
+      }
+
+      const html = [];
+
+      for (let i = 1; i <= state.voterCount; i++) {
+        const key = voterKey(i);
+        const selected = state.votes[key] || [];
+
+        html.push(`
+          <div class="voter-card">
+            <div class="voter-title">
+              <h3>投票人 ${i}</h3>
+              <div class="vote-count">已选 ${selected.length} / ${state.votesPerPerson}</div>
+            </div>
+            ${state.options.map(opt => `
+              <label class="option-choice">
+                <input 
+                  type="checkbox"
+                  data-voter="${i}"
+                  data-option-id="${escapeHtmlAttr(opt.id)}"
+                  ${selected.includes(opt.id) ? "checked" : ""}
+                />
+                <span>
+                  <span class="option-name">${escapeHtmlText(opt.name)}</span>
+                  ${opt.desc ? `<span class="option-desc">${escapeHtmlText(opt.desc)}</span>` : ""}
+                </span>
+              </label>
+            `).join("")}
+          </div>
+        `);
+      }
+
+      els.votingArea.innerHTML = html.join("");
+
+      els.votingArea.querySelectorAll("input[type='checkbox']").forEach(input => {
+        input.addEventListener("change", handleVoteChange);
+      });
+    }
+
+    function handleVoteChange(event) {
+      const input = event.target;
+      const voterIndex = parseInt(input.dataset.voter, 10);
+      const optionId = input.dataset.optionId;
+      const key = voterKey(voterIndex);
+
+      if (!Array.isArray(state.votes[key])) {
+        state.votes[key] = [];
+      }
+
+      if (input.checked) {
+        if (state.votes[key].length >= state.votesPerPerson) {
+          input.checked = false;
+          alert(`每人最多只能投 ${state.votesPerPerson} 票。`);
+          return;
+        }
+        if (!state.votes[key].includes(optionId)) {
+          state.votes[key].push(optionId);
+        }
+      } else {
+        state.votes[key] = state.votes[key].filter(id => id !== optionId);
+      }
+
+      saveState();
+      renderVotingArea();
+      renderResults();
+    }
+
+    function renderResults() {
+      const counts = {};
+      state.options.forEach(opt => counts[opt.id] = 0);
+
+      let totalVotes = 0;
+      Object.values(state.votes).forEach(list => {
+        if (!Array.isArray(list)) return;
+        list.forEach(id => {
+          if (counts[id] !== undefined) {
+            counts[id]++;
+            totalVotes++;
+          }
+        });
+      });
+
+      if (!state.options.length) {
+        els.resultsArea.innerHTML = `<div class="empty">暂无选项。</div>`;
+        return;
+      }
+
+      const sorted = [...state.options].sort((a, b) => counts[b.id] - counts[a.id]);
+
+      els.resultsArea.innerHTML = `
+        <p class="notice">
+          当前总票数：${totalVotes}；理论最大票数：${state.voterCount * state.votesPerPerson}。
+        </p>
+        ${sorted.map(opt => {
+          const count = counts[opt.id] || 0;
+          const percent = totalVotes === 0 ? 0 : Math.round((count / totalVotes) * 1000) / 10;
+          const maxPercent = state.voterCount === 0 ? 0 : Math.round((count / state.voterCount) * 1000) / 10;
+          return `
+            <div class="result-item">
+              <div class="result-line">
+                <span>${escapeHtmlText(opt.name)}</span>
+                <span>${count} 票</span>
+              </div>
+              <div class="bar-bg">
+                <div class="bar" style="width:${percent}%"></div>
+              </div>
+              <div class="meta">
+                占已投票数 ${percent}%；占投票人数 ${maxPercent}%。
+              </div>
+            </div>
+          `;
+        }).join("")}
+      `;
+    }
+
+    function applySettings() {
+      state.title = els.pollTitle.value.trim() || "静态投票工具";
+      state.voterCount = Math.max(1, parseInt(els.voterCount.value || "1", 10));
+      state.votesPerPerson = Math.max(1, parseInt(els.votesPerPerson.value || "1", 10));
+      state = normalizeState(state);
+      saveState();
+      render();
+    }
+
+    function applyOptionsFromEditor() {
+      const items = [...els.optionsEditor.querySelectorAll(".option-item")];
+      const nextOptions = items.map(item => {
+        const id = item.dataset.optionId || cryptoRandomId();
+        const name = item.querySelector("[data-field='name']").value.trim();
+        const desc = item.querySelector("[data-field='desc']").value;
+        return {
+          id,
+          name: name || "未命名选项",
+          desc
+        };
+      });
+
+      state.options = nextOptions.length ? nextOptions : structuredCloneSafe(defaultState.options);
+      state = normalizeState(state);
+      saveState();
+      render();
+    }
+
+    function addOption() {
+      applyOptionsFromEditor();
+      state.options.push({
+        id: cryptoRandomId(),
+        name: `选项 ${state.options.length + 1}`,
+        desc: ""
+      });
+      saveState();
+      render();
+    }
+
+    function clearVotes() {
+      if (!confirm("确定清空所有投票记录吗？选项和设置会保留。")) return;
+      state.votes = {};
+      saveState();
+      render();
+    }
+
+    function resetAll() {
+      if (!confirm("确定重置全部内容吗？设置、选项和投票记录都会清空。")) return;
+      state = structuredCloneSafe(defaultState);
+      saveState();
+      render();
+    }
+
+    function exportJson() {
+      applySettings();
+      applyOptionsFromEditor();
+      saveState();
+
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const date = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `vote-data-${date}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function importJson(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          state = normalizeState(parsed);
+          saveState();
+          render();
+          alert("导入成功。");
+        } catch (err) {
+          alert("导入失败：JSON 文件格式不正确。");
+        }
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
+    function escapeHtmlText(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeHtmlAttr(value) {
+      return escapeHtmlText(value);
+    }
+
+    els.applySettingsBtn.addEventListener("click", applySettings);
+    els.saveBtn.addEventListener("click", () => {
+      applySettings();
+      applyOptionsFromEditor();
+      alert("已保存到当前浏览器。");
+    });
+    els.clearVotesBtn.addEventListener("click", clearVotes);
+    els.addOptionBtn.addEventListener("click", addOption);
+    els.applyOptionsBtn.addEventListener("click", applyOptionsFromEditor);
+    els.exportBtn.addEventListener("click", exportJson);
+    els.importFile.addEventListener("change", event => {
+      importJson(event.target.files[0]);
+      event.target.value = "";
+    });
+    els.resetAllBtn.addEventListener("click", resetAll);
+
+    render();
+  </script>
+</body>
+</html>
